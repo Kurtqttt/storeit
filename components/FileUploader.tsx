@@ -21,10 +21,25 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
   const path = usePathname();
   const [files, setFiles] = useState<File[]>([]);
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setFiles(acceptedFiles);
+  const renameFileIfDuplicate = (file: File, existingFiles: File[]): File => {
+    let newName = file.name;
+    let counter = 1;
+    const fileExtension = file.name.split('.').pop();
+    const fileNameWithoutExtension = file.name.replace(`.${fileExtension}`, '');
 
-    const uploadPromises = acceptedFiles.map(async (file) => {
+    while (existingFiles.some(f => f.name === newName)) {
+      newName = `${fileNameWithoutExtension} (${counter}).${fileExtension}`;
+      counter++;
+    }
+
+    return new File([file], newName, { type: file.type });
+  };
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const renamedFiles = acceptedFiles.map(file => renameFileIfDuplicate(file, files));
+    setFiles(prevFiles => [...prevFiles, ...renamedFiles]);
+
+    const uploadPromises = renamedFiles.map(async (file) => {
       if (file.size > MAX_FILE_SIZE) {
         setFiles((prevFiles) =>
           prevFiles.filter((f) => f.name !== file.name)
@@ -52,7 +67,7 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
     });
 
     await Promise.all(uploadPromises);
-  }, [ownerId, accountId, path]);
+  }, [ownerId, accountId, path, files]);
 
   const { getRootProps, getInputProps, } = useDropzone({ onDrop });
 
@@ -118,4 +133,3 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
 };
 
 export default FileUploader;
-//2:56:51
