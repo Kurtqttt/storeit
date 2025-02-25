@@ -184,14 +184,9 @@ export const constructDownloadUrl = (bucketFileId: string) => {
 
 // DASHBOARD UTILS
 export const getUsageSummary = (totalSpace: any) => {
+  console.log('Total Space Document Size:', totalSpace.document.size); // Add this line to log document size
   return [
-    {
-      title: "Documents",
-      size: totalSpace.document.size,
-      latestDate: totalSpace.document.latestDate,
-      icon: "/assets/icons/file-document-light.svg",
-      url: "/documents",
-    },
+    
     {
       title: "Images",
       size: totalSpace.image.size,

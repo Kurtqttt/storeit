@@ -19,6 +19,8 @@ const Dashboard = async () => {
     getTotalSpaceUsed(),
   ]);
 
+  console.log('Total Space:', totalSpace); // Add this line to log totalSpace
+  
   // Get usage summary
   const usageSummary = getUsageSummary(totalSpace);
 

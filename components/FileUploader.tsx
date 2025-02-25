@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Button } from './ui/button';
-import { cn, convertFileToUrl, getFileType } from '@/lib/utils';
-import Image from 'next/image';
-import Thumbnail from './Thumbnail';
-import { MAX_FILE_SIZE } from '@/constants';
-import { toast, Toaster } from 'react-hot-toast';
-import { uploadFile } from '@/lib/actions/file.actions';
-import { usePathname } from 'next/navigation';
+import React, { useCallback, useState } from "react";
+
+import { useDropzone } from "react-dropzone";
+import { Button } from "@/components/ui/button";
+import { cn, convertFileToUrl, getFileType } from "@/lib/utils";
+import Image from "next/image";
+import Thumbnail from "@/components/Thumbnail";
+import { MAX_FILE_SIZE } from "@/constants";
+import { toast, useToaster } from 'react-hot-toast';
+import { uploadFile } from "@/lib/actions/file.actions";
+import { usePathname } from "next/navigation";
 
 interface Props {
   ownerId: string;
@@ -65,11 +66,11 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
   }, [ownerId, accountId, path]); // Removed `files`
   
 
-  const { getRootProps, getInputProps, } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   const handleRemoveFile = (
     e: React.MouseEvent<HTMLImageElement, MouseEvent>,
-    fileName: string
+    fileName: string,
   ) => {
     e.stopPropagation();
     setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
@@ -93,8 +94,12 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
 
           {files.map((file, index) => {
             const { type, extension } = getFileType(file.name);
+
             return (
-              <li key={`${file.name}-${index}`} className="uploader-preview-item">
+              <li
+                key={`${file.name}-${index}`}
+                className="uploader-preview-item"
+              >
                 <div className="flex items-center gap-3">
                   <Thumbnail
                     type={type}
@@ -106,17 +111,18 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
                     {file.name}
                     <Image
                       src="/assets/icons/file-loader.gif"
-                      alt="Loader"
                       width={80}
                       height={26}
+                      alt="Loader"
                     />
                   </div>
                 </div>
+
                 <Image
                   src="/assets/icons/remove.svg"
-                  alt="Remove"
                   width={24}
                   height={24}
+                  alt="Remove"
                   onClick={(e) => handleRemoveFile(e, file.name)}
                 />
               </li>
