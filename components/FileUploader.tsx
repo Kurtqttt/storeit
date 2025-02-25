@@ -22,52 +22,48 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
   const [files, setFiles] = useState<File[]>([]);
 
   const renameFileIfDuplicate = (file: File, existingFiles: File[]): File => {
+    let fileExtension = file.name.split('.').pop();
+    let fileNameWithoutExtension = file.name.replace(`.${fileExtension}`, '');
     let newName = file.name;
     let counter = 1;
-    const fileExtension = file.name.split('.').pop();
-    const fileNameWithoutExtension = file.name.replace(`.${fileExtension}`, '');
-
+  
     while (existingFiles.some(f => f.name === newName)) {
       newName = `${fileNameWithoutExtension} (${counter}).${fileExtension}`;
       counter++;
     }
-
+  
     return new File([file], newName, { type: file.type });
   };
+  
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const renamedFiles = acceptedFiles.map(file => renameFileIfDuplicate(file, files));
-    setFiles(prevFiles => [...prevFiles, ...renamedFiles]);
-
-    const uploadPromises = renamedFiles.map(async (file) => {
+    setFiles((prevFiles) => {
+      const renamedFiles = acceptedFiles.map(file => renameFileIfDuplicate(file, prevFiles));
+      return [...prevFiles, ...renamedFiles];
+    });
+  
+    const uploadPromises = acceptedFiles.map(async (file) => {
       if (file.size > MAX_FILE_SIZE) {
-        setFiles((prevFiles) =>
-          prevFiles.filter((f) => f.name !== file.name)
-        );
-
+        setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
         return toast.error(
           <p className="body-2 text-white">
             <span className="font-semibold">{file.name}</span> is too large.
             Max file size is 50MB.
           </p>,
-          {
-            className: "error-toast",
-          }
+          { className: "error-toast" }
         );
       }
-      return uploadFile ({ file, ownerId, accountId, path }).then(
-        (uploadedFile) => {
-          if (uploadedFile) {
-            setFiles((prevFiles) =>
-              prevFiles.filter((f) => f.name !== file.name),
-            );
-          }
-        },
-      );
+  
+      return uploadFile({ file, ownerId, accountId, path }).then((uploadedFile) => {
+        if (uploadedFile) {
+          setFiles((prevFiles) => prevFiles.filter((f) => f.name !== file.name));
+        }
+      });
     });
-
+  
     await Promise.all(uploadPromises);
-  }, [ownerId, accountId, path, files]);
+  }, [ownerId, accountId, path]); // Removed `files`
+  
 
   const { getRootProps, getInputProps, } = useDropzone({ onDrop });
 
